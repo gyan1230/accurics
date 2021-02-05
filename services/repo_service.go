@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/http"
 
 	"github.com/google/go-github/github"
-	"github.com/gyan1230/2021/accurics/model/oauth"
+	git "github.com/gyan1230/2021/accurics/model/github"
 	"golang.org/x/oauth2"
 )
 
@@ -22,17 +24,23 @@ func GetClient(token string) *github.Client {
 
 //GetRepo :
 func GetRepo(c *github.Client, token, owner, repo string) ([]*github.RepositoryCommit, error) {
-	temprepo, _, err := c.Repositories.Get(context.TODO(), owner, repo)
-	pack := &oauth.Package{
+	temprepo, tempresp, err := c.Repositories.Get(context.TODO(), owner, repo)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	if tempresp.StatusCode != http.StatusOK {
+		log.Println(tempresp.Response)
+		return nil, err
+	}
+	pack := &git.Package{
 		FullName:    *temprepo.FullName,
 		Description: *temprepo.Description,
 		ForksCount:  *temprepo.ForksCount,
 		StarsCount:  *temprepo.StargazersCount,
 	}
 	fmt.Printf("%+v\n", pack)
-
 	commitInfo, _, err := c.Repositories.ListCommits(context.Background(), owner, repo, nil)
-
 	if err != nil {
 		fmt.Printf("Problem in commit information %v\n", err)
 		return nil, err

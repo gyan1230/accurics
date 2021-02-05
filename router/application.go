@@ -15,19 +15,19 @@ import (
 )
 
 var (
-	router *gin.Engine
-	port   string
+	ginRouter *gin.Engine
+	port      string
 )
 
 // StartApp :
 func StartApp() {
 	flag.StringVar(&port, "PORT", "8085", "Port to start the server")
 	flag.Parse()
-	router = gin.Default()
+	ginRouter = gin.Default()
 	address := ":" + port
 	srv := http.Server{
 		Addr:    address,
-		Handler: router,
+		Handler: ginRouter,
 	}
 	mapURL()
 	go func() {

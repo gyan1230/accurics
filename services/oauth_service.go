@@ -7,15 +7,22 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gyan1230/2021/accurics/model/github"
 	"github.com/gyan1230/2021/accurics/model/oauth"
 )
 
-//RedirectSvc :
-func RedirectSvc(c *gin.Context) oauth.AccessResponse {
-	var cid oauth.IDandSecret
+var (
+	//HTTPClient :
+	HTTPClient http.Client
+	//Tokens : Temporary store in memory database
+	Tokens string
+)
+
+//OauthRedirectService :
+func OauthRedirectService(c *gin.Context) {
+	var cid github.IDandSecret
 	cid.ClientID = "67762ddbb19d107ae14f"
 	cid.Secret = "9c67b48923ea069590dd3f1d2e8d9b0526b4ada1"
-	httpClient := http.Client{}
 	err := c.Request.ParseForm()
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "could not parse query: %v", err)
@@ -34,7 +41,7 @@ func RedirectSvc(c *gin.Context) oauth.AccessResponse {
 	req.Header.Set("accept", "application/json")
 
 	// Send out the HTTP request
-	res, err := httpClient.Do(req)
+	res, err := HTTPClient.Do(req)
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "could not send HTTP request: %v", err)
 		c.JSON(http.StatusBadRequest, "BAD")
@@ -47,9 +54,6 @@ func RedirectSvc(c *gin.Context) oauth.AccessResponse {
 		fmt.Fprintf(os.Stdout, "could not parse JSON response: %v", err)
 		c.JSON(http.StatusBadRequest, "BAD")
 	}
-
-	// Finally, send a response to redirect the user to the "welcome" page
-	// with the access token
-	c.Writer.Header().Set("Location", "/welcome.html?access_token="+t.AccessToken)
-	return t
+	Tokens = t.AccessToken
+	c.Redirect(http.StatusFound, "/welcome.html?access_token="+t.AccessToken)
 }

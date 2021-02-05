@@ -1,4 +1,4 @@
-package oauth
+package github
 
 // Package :
 type Package struct {

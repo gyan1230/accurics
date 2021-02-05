@@ -9,5 +9,4 @@ import (
 func main() {
 	fmt.Println("Main go routine start:::")
 	router.StartApp()
-
 }

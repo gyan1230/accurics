@@ -7,14 +7,11 @@ import (
 	"github.com/gyan1230/2021/accurics/controller/oauth"
 )
 
-func init() {
-
-}
-
 //MapURL :
 func mapURL() {
 	fs := http.FileServer(http.Dir("public"))
-	router.GET("/", gin.WrapH(fs))
-	router.GET("/oauth/redirect", oauth.GetRedirect)
-	router.POST("/repo", oauth.GetRepo)
+	ginRouter.StaticFile("/welcome.html", "./public/welcome.html")
+	ginRouter.GET("/", gin.WrapH(fs))
+	ginRouter.GET("/oauth/redirect", oauth.GetRedirect)
+	ginRouter.POST("/repo", oauth.GetRepo)
 }

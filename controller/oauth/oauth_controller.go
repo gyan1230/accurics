@@ -4,34 +4,36 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gyan1230/2021/accurics/model/oauth"
+	"github.com/gyan1230/2021/accurics/model/github"
 	"github.com/gyan1230/2021/accurics/services"
 )
 
-//Tokens : Temporary store in memory database
-var Tokens = make(map[string]string)
-
 //GetRedirect :
 func GetRedirect(c *gin.Context) {
-	Tokens = make(map[string]string)
-	token := services.RedirectSvc(c)
-	Tokens["User1"] = token.AccessToken
+	services.OauthRedirectService(c)
 }
 
 //GetRepo :
 func GetRepo(c *gin.Context) {
-	var r oauth.RepoInfo
+	var r github.RepoInfo
 	err := c.ShouldBindJSON(&r)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"Message": "Not found",
 		})
+		return
 	}
-	token := Tokens["User1"]
-	client := services.GetClient(token)
-	repo, err := services.GetRepo(client, token, r.Owner, r.Repo)
+	if r.Owner == "" || r.Repo == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"Message": "Owner or Repo should not be empty",
+		})
+		return
+	}
+	client := services.GetClient(services.Tokens)
+	repo, err := services.GetRepo(client, services.Tokens, r.Owner, r.Repo)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
+		return
 	}
 	c.JSON(http.StatusAccepted, gin.H{
 		"Last commits": repo[0],

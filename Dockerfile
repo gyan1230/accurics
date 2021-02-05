@@ -15,6 +15,10 @@ RUN go mod download
 # Copy the source from the current directory to the Working Directory inside the container
 COPY . .
 
+RUN mkdir -p public
+
+COPY public ./public
+
 # Build the Go app
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/main.go
 
@@ -25,6 +29,11 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
+
+RUN mkdir -p public
+
+COPY --from=builder /app/public/index.html /root/public
+COPY --from=builder /app/public/welcome.html /root/public
 
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/main .
